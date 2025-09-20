@@ -1,9 +1,6 @@
 import os
 from typing import List, Dict
 
-# Required dependencies:
-# pip install libzim whoosh pypdf
-
 from libzim.reader import Archive
 from libzim.search import Query, Searcher
 
@@ -13,6 +10,7 @@ from whoosh.qparser import QueryParser
 from whoosh import highlight
 
 from pypdf import PdfReader
+import re
 
 class LocalSearcher:
     def __init__(self, root_dir: str, index_dir: str = "local_search_index"):
@@ -33,6 +31,14 @@ class LocalSearcher:
         if filepath.endswith('.txt'):
             with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
                 return f.read()
+        elif filepath.endswith('.tex'):
+            try:
+                with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
+                    raw = f.read()
+                return self._clean_latex(raw)
+            except Exception as e:
+                print(f"Error extracting TEX {filepath}: {e}")
+                return ''
         elif filepath.endswith('.pdf'):
             try:
                 reader = PdfReader(filepath)
@@ -45,6 +51,56 @@ class LocalSearcher:
                 return ''
         # Add more file types as needed (e.g., docx with python-docx)
         return ''
+
+    def _clean_latex(self, text: str) -> str:
+        """
+        Remove LaTeX commands, environments, math, and comments to leave readable plain text.
+        This is a heuristic stripper (not a full LaTeX parser) intended for indexing and search.
+        """
+        # Remove comments (lines starting with %)
+        text = re.sub(r"(?m)^%.*$", "", text)
+        # Remove inline comments (after %), but keep escaped \% by temporarily protecting them
+        text = text.replace(r"\%", "__PERCENT_ESCAPED__")
+        text = re.sub(r"%.*", "", text)
+        text = text.replace("__PERCENT_ESCAPED__", r"%")
+
+        # Remove content in common environments (equation, align, figure, table, tikzpicture, lstlisting)
+        envs = [
+            r'equation', r'equation\*', r'align', r'align\*', r'multiline', r'gather', r'math',
+            r'figure', r'table', r'tikzpicture', r'lstlisting', r'verbatim', r'Verbatim'
+        ]
+        for env in envs:
+            pattern = re.compile(r"\\begin\{" + env + r"\}.*?\\end\{" + env + r"\}", re.DOTALL)
+            text = pattern.sub(' ', text)
+
+        # Remove display math $$...$$ and \[ ... \]
+        text = re.sub(r"\$\$.*?\$\$", " ", text, flags=re.DOTALL)
+        text = re.sub(r"\\\[.*?\\\]", " ", text, flags=re.DOTALL)
+
+        # Remove inline math $...$
+        text = re.sub(r"\$(?:[^$\\]|\\.)*\$", " ", text)
+
+        # Remove LaTeX commands like \command[optional]{required} or \command{...} or \command
+        # Keep simple text inside some commands like \textbf{...} by extracting the inner text
+        # First, replace common formatting commands by their contents
+        formatting_cmds = ['textbf', 'textit', 'emph', 'underline', 'texttt', 'textrm', 'textsf']
+        for cmd in formatting_cmds:
+            text = re.sub(r"\\" + cmd + r"\s*\{([^}]*)\}", r"\1", text)
+
+        # Remove any remaining \command{...} by stripping command but keeping contents
+        text = re.sub(r"\\[a-zA-Z@]+\s*\{([^}]*)\}", r"\1", text)
+        # Remove any remaining commands like \command[...]{...}
+        text = re.sub(r"\\[a-zA-Z@]+\s*\[[^\]]*\]\s*\{([^}]*)\}", r"\1", text)
+        # Remove commands like \command
+        text = re.sub(r"\\[a-zA-Z@]+", "", text)
+
+        # Remove leftover braces
+        text = text.replace('{', ' ').replace('}', ' ')
+
+        # Collapse multiple whitespace
+        text = re.sub(r"\s+", " ", text)
+
+        return text.strip()
 
     def _build_index(self):
         """
