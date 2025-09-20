@@ -23,7 +23,7 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
             className="cursor-pointer"
             onClick={() => onNavigate('home')}
           >
-            <h2 className="text-primary">NoteGenius</h2>
+            <h2 className="text-primary">FocusNote</h2>
           </div>
           
           <nav className="hidden md:flex items-center gap-8">
