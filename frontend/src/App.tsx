@@ -6,6 +6,7 @@ import { Features } from './components/pages/Features';
 import { Demo } from './components/pages/Demo';
 import { Dashboard } from './components/pages/Dashboard';
 import { Timetable } from './components/pages/Timetable';
+import { MockExam } from './components/pages/MockExam';
 import { About } from './components/pages/About';
 
 export default function App() {
@@ -27,6 +28,8 @@ export default function App() {
         return <Dashboard />;
       case 'timetable':
         return <Timetable />;
+      case 'mockexam':
+        return <MockExam onNavigate={handleNavigate} />;
       case 'about':
         return <About />;
       default:
