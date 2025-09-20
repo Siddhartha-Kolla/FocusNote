@@ -84,7 +84,7 @@ export function Landing({ onNavigate }: LandingProps) {
       <section className="bg-muted/30 py-24">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="mb-4 text-3xl md:text-4xl">Why Students Love NoteGenius</h2>
+            <h2 className="mb-4 text-3xl md:text-4xl">Why Students Love FocusNote</h2>
             <p className="text-xl text-muted-foreground">
               Transform your study routine with intelligent note processing
             </p>

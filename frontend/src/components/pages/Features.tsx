@@ -78,7 +78,7 @@ export function Features() {
         {/* Feature Grid */}
         <div className="bg-muted/30 rounded-3xl p-12">
           <div className="text-center mb-12">
-            <h2 className="mb-4 text-3xl">Why Choose NoteGenius?</h2>
+            <h2 className="mb-4 text-3xl">Why Choose FocusNote?</h2>
             <p className="text-muted-foreground text-lg">
               Built for students who want to study smarter, not harder
             </p>
@@ -113,7 +113,7 @@ export function Features() {
             </Card>
             
             <Card className="p-8 rounded-2xl border border-secondary/20 bg-secondary/5">
-              <h3 className="mb-4 text-secondary">NoteGenius Method</h3>
+              <h3 className="mb-4 text-secondary">FocusNote Method</h3>
               <ul className="space-y-3">
                 <li>• Instant digital conversion</li>
                 <li>• AI-powered organization</li>

@@ -100,7 +100,7 @@ export function Demo({ onNavigate }: DemoProps) {
           <div className="max-w-4xl mx-auto">
             <h2 className="mb-6 text-3xl">See It In Action</h2>
             <p className="text-lg text-muted-foreground mb-8">
-              Watch how NoteGenius transforms handwritten physics notes into a comprehensive study guide
+              Watch how FocusNote transforms handwritten physics notes into a comprehensive study guide
             </p>
             
             <div className="bg-white rounded-2xl p-8 shadow-lg">

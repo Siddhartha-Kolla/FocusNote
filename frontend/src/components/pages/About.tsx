@@ -51,7 +51,7 @@ export function About() {
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="mb-6 text-3xl">Our Mission</h2>
             <p className="text-lg text-muted-foreground leading-relaxed mb-8">
-              At NoteGenius, we believe that every student deserves access to tools that make learning 
+              At FocusNote, we believe that every student deserves access to tools that make learning 
               more efficient and effective. Our AI-powered platform transforms the age-old practice 
               of handwritten note-taking into a smart, digital experience that adapts to each student's 
               unique learning style and academic goals.
@@ -76,7 +76,7 @@ export function About() {
             <h2 className="mb-6 text-3xl">Our Story</h2>
             <div className="space-y-4 text-muted-foreground leading-relaxed">
               <p>
-                NoteGenius was born from a simple observation: students spend countless hours 
+                FocusNote was born from a simple observation: students spend countless hours 
                 rewriting and organizing their handwritten notes, time that could be better 
                 spent actually learning and understanding the material.
               </p>
@@ -116,7 +116,7 @@ export function About() {
           <div className="text-center mb-12">
             <h2 className="mb-4 text-3xl">Meet Our Team</h2>
             <p className="text-lg text-muted-foreground">
-              The passionate individuals behind NoteGenius
+              The passionate individuals behind FocusNote
             </p>
           </div>
           
@@ -152,7 +152,7 @@ export function About() {
                   Get help with your account or technical issues
                 </p>
                 <Button variant="outline" className="rounded-xl">
-                  support@notegenius.com
+                  support@focusnote.com
                 </Button>
               </Card>
               
