@@ -13,9 +13,6 @@ def downsize_image(image_path, output_path=None, max_size=(1024, 1024)):
             img.save(image_path)
 
 
-
-
-
 def get_text_from_ocr_space():
     payload = {
         "isOverlayRequired": False,
