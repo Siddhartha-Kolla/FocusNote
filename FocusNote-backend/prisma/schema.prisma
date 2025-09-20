@@ -21,13 +21,6 @@ model User {
   Doc  Doc[]
 }
 
-model Otp {
-  id         String   @id @default(uuid())
-  email      String   @unique
-  code       String
-  expires_at DateTime
-}
-
 model Chat {
   id         String   @id @default(uuid())
   user_id    String
@@ -42,7 +35,7 @@ model Chat {
 model Doc {
   id         String   @id @default(uuid())
   user_id    String
-  author     String   // "user" | "ai"
+  from_ai     Bool   // "user" | "ai"
   chat_id    String
   blob       Bytes
   created_at DateTime @default(now())
