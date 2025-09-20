@@ -11,6 +11,7 @@ export function Header({ currentPage, onNavigate }: HeaderProps) {
     { name: 'Features', id: 'features' },
     { name: 'How It Works', id: 'demo' },
     { name: 'Dashboard', id: 'dashboard' },
+    { name: 'Timetable', id: 'timetable' },
     { name: 'About', id: 'about' }
   ];
 

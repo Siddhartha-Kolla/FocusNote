@@ -5,6 +5,7 @@ import { Landing } from './components/pages/Landing';
 import { Features } from './components/pages/Features';
 import { Demo } from './components/pages/Demo';
 import { Dashboard } from './components/pages/Dashboard';
+import { Timetable } from './components/pages/Timetable';
 import { About } from './components/pages/About';
 
 export default function App() {
@@ -24,6 +25,8 @@ export default function App() {
         return <Demo onNavigate={handleNavigate} />;
       case 'dashboard':
         return <Dashboard />;
+      case 'timetable':
+        return <Timetable />;
       case 'about':
         return <About />;
       default:
