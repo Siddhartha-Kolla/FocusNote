@@ -16,6 +16,7 @@ from ocr_processor import OCRProcessor
 from document_processor import DocumentProcessor
 from latex_generator import LaTeXGenerator
 from utils import setup_logging, ErrorHandler, validate_environment, perf_monitor
+from genCon.llm import HackAPI
 
 # Setup logging
 setup_logging(log_level="INFO")
@@ -57,9 +58,36 @@ class ChatRequest(BaseModel):
     context: Optional[List[dict]] = []
     user_id: Optional[str] = None
 
+class LLMRequest(BaseModel):
+    prompt: str
+    info: Optional[str] = None
+
+class LLMResponse(BaseModel):
+    response: str
+    error: Optional[str] = None
+
 class ChatResponse(BaseModel):
     response: str
     timestamp: str
+
+# === LLM API Endpoint ===
+@app.post("/llm/call", response_model=LLMResponse)
+async def call_llm(request: LLMRequest):
+    """
+    Call the HackAPI LLM with a prompt and optional info.
+    """
+    try:
+        response_text = HackAPI.get_text_from_hackai(
+            prompt=request.prompt,
+            info=request.info or ""
+        )
+        # If error detected in response, return in error field
+        if response_text.startswith("[error]"):
+            return LLMResponse(response="", error=response_text)
+        return LLMResponse(response=response_text)
+    except Exception as e:
+        ErrorHandler.log_error(e, "llm_call")
+        return LLMResponse(response="", error=str(e))
 
 # Initialize processors
 try:
