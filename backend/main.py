@@ -52,6 +52,15 @@ class ProcessingResponse(BaseModel):
     recommended_title: Optional[str] = None  # AI-recommended title if none provided
     context_analysis: Optional[str] = None  # Context understanding of the document
 
+class ChatRequest(BaseModel):
+    message: str
+    context: Optional[List[dict]] = []
+    user_id: Optional[str] = None
+
+class ChatResponse(BaseModel):
+    response: str
+    timestamp: str
+
 # Initialize processors
 try:
     ocr_processor = OCRProcessor()
@@ -346,6 +355,62 @@ async def cleanup_file(filename: str):
         return {"message": f"File {filename} deleted successfully"}
     else:
         raise HTTPException(status_code=404, detail="File not found")
+
+@app.post("/chat", response_model=ChatResponse)
+async def chat_with_ai(request: ChatRequest):
+    """
+    Handle chat interactions about processed documents
+    
+    Args:
+        request: ChatRequest with message, context, and user_id
+    
+    Returns:
+        ChatResponse with AI response
+    """
+    logger.info(f"=== CHAT REQUEST ===")
+    logger.info(f"User message: {request.message}")
+    logger.info(f"Context messages: {len(request.context)}")
+    logger.info(f"User ID: {request.user_id}")
+    
+    try:
+        # Extract recent conversation context
+        conversation_context = ""
+        if request.context:
+            # Get last few messages for context
+            recent_messages = request.context[-5:]  # Last 5 messages
+            conversation_context = "\n".join([
+                f"{msg.get('type', 'user')}: {msg.get('content', '')}" 
+                for msg in recent_messages
+                if msg.get('content')
+            ])
+        
+        # Use the document processor to handle the chat
+        perf_monitor.start_timer("chat_processing")
+        
+        # Call the chat handler method (we'll add this to document_processor)
+        ai_response = await document_processor.handle_chat_query(
+            user_message=request.message,
+            conversation_context=conversation_context
+        )
+        
+        perf_monitor.end_timer("chat_processing")
+        
+        logger.info(f"AI response generated: {ai_response[:100]}...")
+        
+        return ChatResponse(
+            response=ai_response,
+            timestamp=datetime.now().isoformat()
+        )
+        
+    except Exception as e:
+        ErrorHandler.log_error(e, "chat_with_ai")
+        logger.error(f"Chat processing failed: {e}")
+        
+        # Return a fallback response
+        return ChatResponse(
+            response="I'm sorry, I'm having trouble processing your request right now. Please try asking your question in a different way, or check back in a moment.",
+            timestamp=datetime.now().isoformat()
+        )
 
 if __name__ == "__main__":
     # Create output directory

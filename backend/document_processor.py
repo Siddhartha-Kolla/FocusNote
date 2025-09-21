@@ -523,3 +523,84 @@ Please provide the following information in a structured format:
             results["error"] = str(e)
             results["final_text"] = raw_text  # Fallback to original
             return results
+    
+    async def handle_chat_query(self, user_message: str, conversation_context: str = "") -> str:
+        """
+        Handle chat queries about processed documents
+        
+        Args:
+            user_message: User's question/message
+            conversation_context: Recent conversation history
+        
+        Returns:
+            AI response to the user's query
+        """
+        logger.info(f"Processing chat query: {user_message[:100]}...")
+        
+        # Add cache-busting identifier for unique responses
+        import uuid
+        cache_buster = str(uuid.uuid4())[:8]
+        
+        # Build context-aware prompt
+        prompt = f"""[Request ID: {cache_buster}] You are a helpful AI assistant specializing in academic documents and study materials.
+
+User's question: {user_message}
+
+"""
+        
+        # Add conversation context if available
+        if conversation_context and conversation_context.strip():
+            prompt += f"""Recent conversation:
+{conversation_context}
+
+"""
+        
+        prompt += """Please provide a helpful, informative response to the user's question. 
+
+Guidelines:
+- Be clear and concise
+- Focus on the user's specific question
+- If the question is about a document, provide relevant insights
+- If asking for explanations, break down concepts clearly
+- If requesting modifications, provide specific suggestions
+- Maintain a helpful and educational tone
+- Use the same language as the user's question when possible
+"""
+        
+        chat_assistant = """
+        You are an expert AI tutor and document assistant. You help students and professionals understand, analyze, and work with their academic documents.
+
+        Your capabilities include:
+        - Explaining mathematical concepts and formulas
+        - Clarifying scientific principles and calculations
+        - Helping with document structure and organization
+        - Providing study tips and learning strategies
+        - Answering questions about document content
+        - Suggesting improvements or corrections
+        - Breaking down complex topics into understandable parts
+
+        Always be:
+        - Helpful and encouraging
+        - Clear and well-structured in explanations
+        - Patient with different learning levels
+        - Focused on educational value
+        - Respectful and professional
+        - Responsive to the specific question asked
+        """
+        
+        try:
+            ai_response = await asyncio.get_event_loop().run_in_executor(
+                None,
+                lambda: self.hackai.get_text_from_hackai_response(prompt, assistant=chat_assistant)
+            )
+            
+            if not ai_response or ai_response.strip() == "":
+                logger.warning("Chat AI returned empty response")
+                return "I apologize, but I'm having trouble processing your question right now. Could you please rephrase it or try asking something else?"
+            
+            logger.info(f"Chat response generated successfully: {len(ai_response)} characters")
+            return ai_response.strip()
+            
+        except Exception as e:
+            logger.error(f"Error in chat query processing: {str(e)}")
+            return "I'm sorry, I encountered an error while processing your question. Please try asking your question in a different way, or let me know if you need help with something specific about your document."

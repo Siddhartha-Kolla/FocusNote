@@ -73,6 +73,8 @@ export default function UserHeader({ user }: UserHeaderProps) {
             <nav className="hidden sm:flex items-center gap-2 text-sm text-gray-600">
               <a href="/user" className="px-2 py-1 rounded hover:bg-gray-50">Overview</a>
               <a href="/user/documents" className="px-2 py-1 rounded hover:bg-gray-50">Documents</a>
+              <a href="/user/review" className="px-2 py-1 rounded hover:bg-gray-50">Review</a>
+              <a href="/user/exam-generator" className="px-2 py-1 rounded hover:bg-gray-50">Exam Generator</a>
               <a href="/user/schedule" className="px-2 py-1 rounded hover:bg-gray-50">Schedule</a>
             </nav>
           </div>
@@ -147,6 +149,8 @@ export default function UserHeader({ user }: UserHeaderProps) {
             <nav className="space-y-1">
               <a href="/user" className="block px-4 py-2 rounded hover:bg-gray-50">Overview</a>
               <a href="/user/documents" className="block px-4 py-2 rounded hover:bg-gray-50">Documents</a>
+              <a href="/user/review" className="block px-4 py-2 rounded hover:bg-gray-50">Review</a>
+              <a href="/user/exam-generator" className="block px-4 py-2 rounded hover:bg-gray-50">Exam Generator</a>
               <a href="/user/schedule" className="block px-4 py-2 rounded hover:bg-gray-50">Schedule</a>
               <a href="/user/profile" className="block px-4 py-2 rounded hover:bg-gray-50">Profile</a>
               <a href="/user/settings" className="block px-4 py-2 rounded hover:bg-gray-50">Settings</a>
