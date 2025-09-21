@@ -17,6 +17,7 @@ from document_processor import DocumentProcessor
 from latex_generator import LaTeXGenerator
 from utils import setup_logging, ErrorHandler, validate_environment, perf_monitor
 from genCon.llm import HackAPI
+from exam_gen import ExamGenerator
 
 # Setup logging
 setup_logging(log_level="INFO")
@@ -25,6 +26,55 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="FocusNote Document Processing API",
     description="FastAPI server for processing scanned documents with OCR, AI text cleaning, and LaTeX generation",
+# ...existing code...
+
+# === Exam PDF Generation Endpoint ===
+class ExamRequest(BaseModel):
+    total_questions: int = 10
+    level_one: int = 25
+    level_two: int = 25
+    level_three: int = 25
+    level_four: int = 15
+    level_five: int = 10
+    memory_task: int = 30
+    interpretation_task: int = 40
+    transfer_task: int = 30
+    title: Optional[str] = "Beautiful AI-Generated Exam"
+    author: Optional[str] = "FocusNote Team"
+
+@app.post("/exam/pdf")
+async def generate_exam_pdf(request: ExamRequest):
+    """
+    Generate an exam and return the PDF file.
+    """
+    # Generate questions JSON
+    questions_json = ExamGenerator.get_exam_questions(
+        total_questions=request.total_questions,
+        level_one=request.level_one,
+        level_two=request.level_two,
+        level_three=request.level_three,
+        level_four=request.level_four,
+        level_five=request.level_five,
+        memory_task=request.memory_task,
+        interpretation_task=request.interpretation_task,
+        transfer_task=request.transfer_task
+    )
+    # Generate LaTeX
+    latex_exam = ExamGenerator.questions_json_to_latex(
+        questions_json,
+        title=request.title,
+        author=request.author
+    )
+    # Compile to PDF
+    pdf_path = ExamGenerator.compile_latex_to_pdf(latex_exam)
+    if pdf_path and Path(pdf_path).exists():
+        return FileResponse(
+            path=pdf_path,
+            filename="exam.pdf",
+            media_type="application/pdf"
+        )
+    else:
+        raise HTTPException(status_code=500, detail="PDF generation failed.")
     version="1.0.0"
 )
 
@@ -88,6 +138,54 @@ async def call_llm(request: LLMRequest):
     except Exception as e:
         ErrorHandler.log_error(e, "llm_call")
         return LLMResponse(response="", error=str(e))
+
+# === Exam PDF Generation Endpoint ===
+class ExamRequest(BaseModel):
+    total_questions: int = 10
+    level_one: int = 25
+    level_two: int = 25
+    level_three: int = 25
+    level_four: int = 15
+    level_five: int = 10
+    memory_task: int = 30
+    interpretation_task: int = 40
+    transfer_task: int = 30
+    title: Optional[str] = "Beautiful AI-Generated Exam"
+    author: Optional[str] = "FocusNote Team"
+
+@app.post("/exam/pdf")
+async def generate_exam_pdf(request: ExamRequest):
+    """
+    Generate an exam and return the PDF file.
+    """
+    # Generate questions JSON
+    questions_json = ExamGenerator.get_exam_questions(
+        total_questions=request.total_questions,
+        level_one=request.level_one,
+        level_two=request.level_two,
+        level_three=request.level_three,
+        level_four=request.level_four,
+        level_five=request.level_five,
+        memory_task=request.memory_task,
+        interpretation_task=request.interpretation_task,
+        transfer_task=request.transfer_task
+    )
+    # Generate LaTeX
+    latex_exam = ExamGenerator.questions_json_to_latex(
+        questions_json,
+        title=request.title,
+        author=request.author
+    )
+    # Compile to PDF
+    pdf_path = ExamGenerator.compile_latex_to_pdf(latex_exam)
+    if pdf_path and Path(pdf_path).exists():
+        return FileResponse(
+            path=pdf_path,
+            filename="exam.pdf",
+            media_type="application/pdf"
+        )
+    else:
+        raise HTTPException(status_code=500, detail="PDF generation failed.")
 
 # Initialize processors
 try:

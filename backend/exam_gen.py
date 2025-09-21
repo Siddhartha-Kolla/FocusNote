@@ -1,6 +1,34 @@
+import tempfile
+from pathlib import Path
 from hackai_api_access import HackAPI as hackai
+import json
+from latex_generator import LaTeXGenerator
 
 class ExamGenerator:
+    @staticmethod
+    def compile_latex_to_pdf(latex_content: str, output_dir: str = None) -> str:
+        """
+        Compile LaTeX content to PDF and return the PDF file path.
+        """
+        from latex_generator import LaTeXGenerator
+        import shutil
+        import os
+        generator = LaTeXGenerator()
+        # Use a temporary directory if not specified
+        temp_dir = Path(output_dir) if output_dir else Path(tempfile.mkdtemp())
+        tex_path = temp_dir / "exam.tex"
+        pdf_path = temp_dir / "exam.pdf"
+        # Save LaTeX file
+        generator.save_latex_file(latex_content, tex_path)
+        # Compile to PDF
+        compiled_pdf = generator.compile_latex(tex_path)
+        if compiled_pdf and Path(compiled_pdf).exists():
+            # Optionally copy to output.pdf in backend folder
+            final_pdf = Path("output.pdf")
+            shutil.copy(compiled_pdf, final_pdf)
+            return str(final_pdf)
+        else:
+            return ""
     def evaluate_answer(answer: str, question: str, user_answer: str) -> str:
         evaluation_context = r"""
         You are an expert exam evaluator.  
@@ -75,8 +103,7 @@ class ExamGenerator:
             - Keep exam language consistent with user input.
 
             5. Output:
-            - Strict JSON array of exactly "total_questions" questions.
-            - No additional commentary or text outside JSON.
+            - A .tex file formatted for LaTeX exams.
 
         """
 
@@ -85,6 +112,63 @@ class ExamGenerator:
         prompt = f"Generate exam questions from the following text: {prompt}"
         response = hackai.get_text_from_hackai_response(prompt, assistant=promt_context)
         return response
+
+    @staticmethod
+    def questions_json_to_latex(questions_json: str, title: str = "Mock Exam", author: str = "FocusNote AI") -> str:
+        """
+        Convert exam questions JSON to a beautiful LaTeX exam document.
+        """
+        try:
+            questions = json.loads(questions_json)
+        except Exception:
+            return f"% Error: Could not parse questions JSON\n{questions_json}"
+
+        latex = [
+            r"\documentclass[12pt]{article}",
+            r"\usepackage[utf8]{inputenc}",
+            r"\usepackage{enumitem}",
+            r"\usepackage{tcolorbox}",
+            r"\usepackage{geometry}",
+            r"\geometry{margin=1in}",
+            r"\usepackage{xcolor}",
+            r"\definecolor{easy}{HTML}{DFF0D8}",
+            r"\definecolor{medium}{HTML}{FCF8E3}",
+            r"\definecolor{hard}{HTML}{F2DEDE}",
+            r"\newcommand{\badge}[2]{\fcolorbox{#1}{#1}{\textbf{#2}}}",
+            r"\begin{document}",
+            f"\begin{{center}}\Huge\textbf{{{title}}}\\[1ex]\large {author}\\[2ex]\normalsize\today\end{{center}}",
+            r"\vspace{1em}",
+            r"\begin{tcolorbox}[colback=blue!5!white,colframe=blue!80!black,title=Instructions]",
+            r"Answer all questions. For multiple choice, circle the correct option. For free text, write your answer in the space provided.",
+            r"\end{tcolorbox}",
+            ""
+        ]
+        def difficulty_badge(level):
+            if str(level) in ['1', '2']:
+                return "\\badge{easy}{Easy}"
+            elif str(level) in ['3', '4']:
+                return "\\badge{medium}{Medium}"
+            elif str(level) == '5':
+                return "\\badge{hard}{Hard}"
+            return ""
+        for i, q in enumerate(questions if isinstance(questions, list) else questions.get('questions', [])):
+            latex.append(f"\\section*{{Question {i+1}}}")
+            latex.append(q.get('question', ''))
+            latex.append(f"\\textit{{Task type:}} {q.get('task_type', '')} ")
+            latex.append(difficulty_badge(q.get('difficulty', '')))
+            if q.get('type') in ['multiple_choice', 'single_choice'] and q.get('choices'):
+                latex.append("\\begin{enumerate}[label=\Alph*.] ")
+                for choice in q['choices']:
+                    latex.append(f"  \\item {choice}")
+                latex.append("\\end{enumerate}")
+            elif q.get('type') == 'free_text':
+                latex.append(r"\vspace{2em}")
+                latex.append(r"\noindent\rule{\textwidth}{0.4pt}")
+                latex.append(r"\vspace{2em}")
+            latex.append(f"\\textbf{{Answer:}} {q.get('answer', '')}")
+            latex.append("")
+        latex.append(r"\end{document}")
+        return "\n".join(latex)
 
 
     def get_exam_questions(
@@ -118,6 +202,15 @@ class ExamGenerator:
             """
 
             return (ExamGenerator.generate_exam_questions(prompt))
+    
+
 
 if __name__ == "__main__":
-       print(ExamGenerator.get_exam_questions())
+    questions_json = ExamGenerator.get_exam_questions()
+    latex_exam = ExamGenerator.questions_json_to_latex(questions_json, title="Beautiful AI-Generated Exam", author="FocusNote Team")
+    print(latex_exam)
+    pdf_path = ExamGenerator.compile_latex_to_pdf(latex_exam)
+    if pdf_path:
+        print(f"PDF generated: {pdf_path}")
+    else:
+        print("PDF generation failed.")
