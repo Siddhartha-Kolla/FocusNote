@@ -5,6 +5,10 @@ yarn-error.log*
 pnpm-debug.log*
 bun-debug.log*
 
+# Backend logs
+backend/logs/
+backend/output/
+
 # Dependency directories
 node_modules/
 

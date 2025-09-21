@@ -1,0 +1,38 @@
+[
+  {
+    "id": "msg-uuid-1",
+    "sender": "system",
+    "timestamp": "2025-09-20T10:00:00Z",
+    "type": "info",
+    "text": "OCR processing started for uploaded file input-uuid-1",
+    "meta": {
+      "job_id": "job-uuid-1"
+    }
+  },
+  {
+    "id": "msg-uuid-2",
+    "sender": "user",
+    "timestamp": "2025-09-20T10:01:02Z",
+    "text": "Here's my handwritten notes (uploaded).",
+    "input_file_ids": [
+      "input-uuid-1"
+    ],
+    "output_file_ids": []
+  },
+  {
+    "id": "msg-uuid-3",
+    "sender": "ai",
+    "timestamp": "2025-09-20T10:02:30Z",
+    "text": "I've processed the note and generated LaTeX. See output-uuid-1.",
+    "input_file_ids": [
+      "input-uuid-1"
+    ],
+    "output_file_ids": [
+      "output-uuid-1"
+    ],
+    "meta": {
+      "model": "gpt-4o-mini",
+      "duration_ms": 1200
+    }
+  }
+]
