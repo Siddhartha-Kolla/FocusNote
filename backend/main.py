@@ -1,6 +1,6 @@
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from typing import List, Optional
 import uvicorn
 import tempfile
@@ -127,13 +127,18 @@ async def generate_exam_pdf(request: ExamRequest):
         title=request.title,
         author=request.author
     )
-    # Compile to PDF
-    pdf_path = ExamGenerator.compile_latex_to_pdf(latex_exam)
-    if pdf_path and Path(pdf_path).exists():
-        return FileResponse(
-            path=pdf_path,
-            filename="exam.pdf",
-            media_type="application/pdf"
+    # Compile to PDF (returns bytes)
+    try:
+        pdf_bytes = await ExamGenerator.compile_latex_to_pdf(latex_exam)
+    except Exception as e:
+        ErrorHandler.log_error(e, "generate_exam_pdf")
+        pdf_bytes = b""
+
+    if pdf_bytes:
+        return StreamingResponse(
+            content=iter([pdf_bytes]),
+            media_type="application/pdf",
+            headers={"Content-Disposition": "attachment; filename=exam.pdf"}
         )
     else:
         raise HTTPException(status_code=500, detail="PDF generation failed.")

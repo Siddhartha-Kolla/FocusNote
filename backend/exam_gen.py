@@ -6,29 +6,44 @@ from latex_generator import LaTeXGenerator
 
 class ExamGenerator:
     @staticmethod
-    def compile_latex_to_pdf(latex_content: str, output_dir: str = None) -> str:
+    async def compile_latex_to_pdf(latex_content: str) -> bytes:
         """
-        Compile LaTeX content to PDF and return the PDF file path.
+        Compile LaTeX content to PDF and return the PDF as bytes.
+
+        This uses the `LaTeXGenerator.generate_pdf` async method which compiles
+        inside a temporary directory and only copies the resulting PDF into a
+        fresh temporary path. We then read the PDF bytes and return them to the
+        caller. No permanent files are left on disk.
         """
         from latex_generator import LaTeXGenerator
         import shutil
-        import os
+        from pathlib import Path
+
         generator = LaTeXGenerator()
-        # Use a temporary directory if not specified
-        temp_dir = Path(output_dir) if output_dir else Path(tempfile.mkdtemp())
-        tex_path = temp_dir / "exam.tex"
-        pdf_path = temp_dir / "exam.pdf"
-        # Save LaTeX file
-        generator.save_latex_file(latex_content, tex_path)
-        # Compile to PDF
-        compiled_pdf = generator.compile_latex(tex_path)
-        if compiled_pdf and Path(compiled_pdf).exists():
-            # Optionally copy to output.pdf in backend folder
-            final_pdf = Path("output.pdf")
-            shutil.copy(compiled_pdf, final_pdf)
-            return str(final_pdf)
-        else:
-            return ""
+
+        # Use a temporary directory for the output and let LaTeXGenerator handle
+        # its own temp workspace. We'll copy the result into another temp file
+        # so we can read bytes and then cleanup.
+        try:
+            with tempfile.TemporaryDirectory() as out_dir:
+                out_path = Path(out_dir)
+                # generate_pdf returns a path string or None
+                pdf_path = await generator.generate_pdf(latex_content, out_path)
+
+                if not pdf_path:
+                    return b""
+
+                pdf_path = Path(pdf_path)
+                if not pdf_path.exists():
+                    return b""
+
+                # Read PDF bytes
+                with open(pdf_path, "rb") as f:
+                    pdf_bytes = f.read()
+
+                return pdf_bytes
+        except Exception:
+            return b""
     def evaluate_answer(answer: str, question: str, user_answer: str) -> str:
         evaluation_context = r"""
         You are an expert exam evaluator.  
