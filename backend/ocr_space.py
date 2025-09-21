@@ -13,9 +13,6 @@ def downsize_image(image_path, output_path=None, max_size=(1024, 1024)):
             img.save(image_path)
 
 
-
-
-
 def get_text_from_ocr_space():
     payload = {
         "isOverlayRequired": False,
@@ -25,7 +22,7 @@ def get_text_from_ocr_space():
         "scale": True,
         "detectOrientation": True,
     }
-    path = os.path.join("/Users/arian/Informatik/FocusNote/orc_samples", "Screenshot_2025-09-20_153543.PNG")
+    path = os.path.join("D:\\Hackathons\\FocusNote\\backend", "input.PNG")
     downsize_image(path, max_size=(1024, 1024))
     with open(path, "rb") as f:
         response = requests.post(
@@ -102,6 +99,9 @@ if parsed_results:
         - Do not translate the content into another language unless the OCR clearly switched incorrectly mid-text.
         - Preserve the logical meaning of the original text as much as possible.
         - Output only the corrected plain text. Do not add LaTeX, formatting, or explanations.
+        - Ensure the final text is coherent and readable.
+        - And also structure the text into paragraphs where appropriate.
+        - And also add some of your own corrections based on context and common sense.
     """
 
     print("Raw OCR response:")
@@ -112,6 +112,14 @@ if parsed_results:
     print(result)
     print("LaTeX formatted text:")
     print(result_latex)
+    with open("output.tex", "w", encoding="utf-8") as f:
+        latex_lines = result_latex.splitlines()
+        if len(latex_lines) > 2:
+            latex_content = "\n".join(latex_lines[1:-1])
+        else:
+            latex_content = result_latex
+        f.write(latex_content)
+    print("LaTeX output written to output.tex")
 else:
     print(ocr_response)
     print("No parsed results found.")

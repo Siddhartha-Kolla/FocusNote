@@ -6,8 +6,9 @@ module.exports = async function authMiddleware(req, res, next) {
   if (!auth || !auth.startsWith('Bearer ')) return res.status(401).json({ error: 'Missing token' });
   const token = auth.split(' ')[1];
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET || 'dev-secret');
-    const user = await prisma.user.findUnique({ where: { id: payload.userId }});
+    const payload = jwt.verify(token, process.env.JWT_SECRET || 'supersecret');
+    // The JWT contains email, not userId, so find user by email
+    const user = await prisma.user.findUnique({ where: { email: payload.email }});
     if (!user) return res.status(401).json({ error: 'User not found' });
     req.user = user;
     next();

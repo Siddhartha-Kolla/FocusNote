@@ -32,6 +32,7 @@ model Chat {
   id         String   @id @default(uuid())
   user_id    String
   title      String?
+  section    String?
   messages   Json
   created_at DateTime @default(now())
 

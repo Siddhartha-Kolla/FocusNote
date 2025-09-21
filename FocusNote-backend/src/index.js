@@ -7,6 +7,7 @@ const cookieParser = require('cookie-parser');
 const authRoutes = require('./routes/auth');
 const docsRoutes = require('./routes/docs');
 const chatsRoutes = require('./routes/chats');
+const processRoutes = require('./routes/process');
 
 
 const app = express();
@@ -18,6 +19,7 @@ app.use(cookieParser());
 app.use('/auth', authRoutes);
 app.use('/docs', docsRoutes);
 app.use('/chats', chatsRoutes);
+app.use('/process', processRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'FocusNote backend is running' });

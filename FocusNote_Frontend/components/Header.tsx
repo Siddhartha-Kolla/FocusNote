@@ -26,6 +26,12 @@ export function Header() {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             <a
+              href="/user/scan"
+              className="text-gray-700 hover:text-gray-900 transition-colors"
+            >
+              Scan
+            </a>
+            <a
               href="/"
               className="text-gray-700 hover:text-gray-900 transition-colors"
             >
@@ -75,6 +81,13 @@ export function Header() {
         {isMenuOpen && (
           <div className="md:hidden border-t border-gray-100">
             <nav className="py-4 space-y-2">
+              <a
+                href="/user/scan"
+                className="block px-4 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Scan
+              </a>
               <a
                 href="/"
                 className="block px-4 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition-colors"
